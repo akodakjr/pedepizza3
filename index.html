@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pede Pizza</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f2f2f2;
+    }
+    .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+    }
+    button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"],
+    select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .grid-item {
+        grid-column: span 1;
+    }
+    .pedido-item {
+        margin-bottom: 10px;
+    }
+    #resumo-pedido {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f2f2f2;
+        border-radius: 5px;
+        white-space: pre-wrap;
+    }
+    #subtotal-pedido,
+    #total-pedido,
+    #taxa-entrega {
+        font-weight: bold;
+        text-align: right;
+    }
+    .error-message {
+        color: red;
+        margin-top: 5px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Pede Pizza</h1>
+
+    <div id="cliente">
+        <h3>Informações do Cliente:</h3>
+        <div class="grid-container">
+            <div class="grid-item">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" placeholder="Digite seu nome..." required>
+            </div>
+            <div class="grid-item">
+                <label for="telefone">Telefone:</label>
+                <input type="tel" id="telefone" placeholder="Digite seu telefone..." required>
+            </div>
+            <div class="grid-item">
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" placeholder="Digite seu endereço..." required>
+            </div>
+            <div class="grid-item">
+                <label for="bairro">Bairro:</label>
+                <select id="bairro" required onchange="atualizarTaxaEntrega()">
+                    <option value="">Selecione o bairro</option>
+                    <option value="nova-maraba" data-taxa="5">Nova Marabá (Taxa: R$ 5,00)</option>
+                    <option value="cidade-nova" data-taxa="7">Cidade Nova (Taxa: R$ 7,00)</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" onclick="adicionarInfoEntrega()">Adicionar Informações de Entrega</button>
+    </div>
+
+    <div id="pizzas">
+        <h3>Escolha até 2 sabores:</h3>
+        <div class="grid-container">
+            <div class="grid-item">
+                <label for="sabor1">Sabor 1:</label>
+                <select id="sabor1" name="sabor1" required onchange="mostrarDescricao(this)">
+                    <option value="">Selecione um sabor</option>
+                    <option value="Calabresa|20.00" data-descricao="Calabresa com cebola, molho de tomate e queijo.">Calabresa - R$ 20,00</option>
+                    <option value="Frango|25.00" data-descricao="Frango desfiado, milho, molho de tomate e queijo.">Frango - R$ 25,00</option>
+                    <option value="Marguerita|22.00" data-descricao="Molho de tomate, queijo, manjericão e tomate.">Marguerita - R$ 22,00</option>
+                    <!-- Adicione mais opções de sabores aqui -->
+                </select>
+            </div>
+            <div class="grid-item">
+                <label for="sabor2">Sabor 2:</label>
+                <select id="sabor2" name="sabor2" onchange="mostrarDescricao(this)">
+                    <option value="">Selecione um sabor</option>
+                    <option value="Calabresa|20.00" data-descricao="Calabresa com cebola, molho de tomate e queijo.">Calabresa - R$ 20,00</option>
+                    <option value="Frango|25.00" data-descricao="Frango desfiado, milho, molho de tomate e queijo.">Frango - R$ 25,00</option>
+                    <option value="Marguerita|22.00" data-descricao="Molho de tomate, queijo, manjericão e tomate.">Marguerita - R$ 22,00</option>
+                    <!-- Adicione mais opções de sabores aqui -->
+                </select>
+            </div>
+            <div class="grid-item">
+                <label for="borda">Borda:</label>
+                <select id="borda" name="borda">
+                    <option value="">Sem borda</option>
+                    <option value="Catupiry|5.00">Borda com Catupiry - R$ 5,00</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" onclick="validarAdicaoPizza()">Adicionar ao Pedido</button>
+        <button type="button" onclick="girarSorte()">Girar a Roda da Sorte</button>
+    </div>
+
+    <div id="bebidas">
+        <h3>Escolha a bebida:</h3>
+        <div class="grid-container">
+            <div class="grid-item">
+                <label for="select-bebida">Bebida:</label>
+                <select id="select-bebida">
+                    <option value="">Selecione uma bebida</option>
+                    <option value="Coca-Cola|5.00">Coca-Cola - R$ 5,00</option>
+                    <option value="Guaraná|4.00">Guaraná - R$ 4,00</option>
+                    <!-- Adicione mais opções de bebidas aqui -->
+                </select>
+                <div class="error-message" id="bebida-error-message" style="display: none;">Por favor, selecione uma bebida.</div>
+            </div>
+            <div class="grid-item">
+                <label for="quantidade-bebida">Quantidade:</label>
+                <input type="number" id="quantidade-bebida" min="1" value="1">
+            </div>
+        </div>
+        <button type="button" onclick="adicionarBebida()">Adicionar Bebida</button>
+    </div>
+
+    <button type="button" onclick="calcularTotalPedido()">Finalizar Pedido e Copiar</button>
+    <button type="button" onclick="enviarPedidoWhatsApp()">Enviar Resumo via WhatsApp</button>
+
+    <div id="resumo-pedido"></div>
+    <div id="subtotal-pedido"></div>
+    <div id="total-pedido"></div>
+    <div id="taxa-entrega"></div>
+
+    <script>
+        let descontoAplicado = false;
+        let subtotalPedido = 0;
+        let taxaEntrega = 0;
+        let descontoGiroDaSorte = 0;
+
+        function girarSorte() {
+            if (!descontoAplicado) {
+                let probabilidade = Math.random();
+                let desconto;
+
+                if (probabilidade < 0.7) {
+                    desconto = 5;
+                } else if (probabilidade < 0.8) {
+                    desconto = 6;
+                } else if (probabilidade < 0.85) {
+                    desconto = 7;
+                } else if (probabilidade < 0.9) {
+                    desconto = 8;
+                } else if (probabilidade < 0.95) {
+                    desconto = 9;
+                } else {
+                    desconto = 10;
+                }
+
+                alert(`Parabéns! Você ganhou ${desconto}% de desconto no seu pedido!`);
+
+                descontoGiroDaSorte = desconto;
+                descontoAplicado = true;
+
+                const listaPedido = document.querySelector('#resumo-pedido');
+                listaPedido.textContent += `\n\nDesconto: ${descontoGiroDaSorte}%`;
+
+                calcularTotalPedidoComDesconto();
+            } else {
+                alert("Você já usou o giro da sorte uma vez!");
+            }
+        }
+
+        function adicionarInfoEntrega() {
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+            const endereco = document.getElementById('endereco').value;
+            const bairro = document.getElementById('bairro').value;
+
+            const infoEntrega = `Nome: ${nome}\nTelefone: ${telefone}\nEndereço: ${endereco}\nBairro: ${bairro} (Taxa de Entrega: R$ ${taxaEntrega.toFixed(2)})`;
+
+            document.getElementById('resumo-pedido').textContent = `Informações de Entrega:\n${infoEntrega}`;
+        }
+
+        function mostrarDescricao(selectElement) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const descricao = selectedOption.getAttribute('data-descricao');
+            alert(descricao);
+        }
+
+        function validarAdicaoPizza() {
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+            const endereco = document.getElementById('endereco').value;
+            const bairro = document.getElementById('bairro').value;
+
+            if (nome === "" || telefone === "" || endereco === "" || bairro === "") {
+                alert("Por favor, insira todas as informações do cliente antes de adicionar a pizza ao pedido.");
+            } else {
+                const sabor1 = document.getElementById('sabor1').value;
+                const sabor2 = document.getElementById('sabor2').value;
+
+                if (sabor1 !== "" && sabor2 !== "") {
+                    adicionarPedido();
+                } else {
+                    alert("Selecione os dois sabores da pizza para adicionar ao pedido.");
+                }
+            }
+        }
+
+        function adicionarPedido() {
+            const sabor1 = document.getElementById('sabor1').value;
+            const sabor2 = document.getElementById('sabor2').value;
+            const borda = document.getElementById('borda').value;
+
+            let subtotalPizza = 0;
+            let itensSelecionados = [];
+
+            // Adiciona o sabor 1
+            const [sabor1Nome, sabor1Preco] = sabor1.split('|');
+            subtotalPizza += parseFloat(sabor1Preco);
+            itensSelecionados.push(sabor1Nome);
+
+            // Adiciona o sabor 2
+            const [sabor2Nome, sabor2Preco] = sabor2.split('|');
+            subtotalPizza += parseFloat(sabor2Preco);
+            itensSelecionados.push(sabor2Nome);
+
+            // Adiciona a borda
+            if (borda !== "") {
+                const [bordaNome, bordaPreco] = borda.split('|');
+                subtotalPizza += parseFloat(bordaPreco);
+                itensSelecionados.push(bordaNome);
+            }
+
+            const textoPizza = `Subtotal da Pizza: R$ ${subtotalPizza.toFixed(2)}\nItens selecionados: ${itensSelecionados.join(', ')}`;
+            document.getElementById('resumo-pedido').innerHTML += `<div class="pedido-item">${textoPizza}</div>`;
+
+            subtotalPedido += subtotalPizza;
+            atualizarSubtotalPedido();
+        }
+
+        function adicionarBebida() {
+            const bebidaSelecionada = document.getElementById('select-bebida').value;
+            const quantidadeBebida = document.getElementById('quantidade-bebida').value;
+
+            if (bebidaSelecionada === "") {
+                document.getElementById('bebida-error-message').style.display = "block";
+            } else {
+                document.getElementById('bebida-error-message').style.display = "none";
+
+                const [bebidaNome, bebidaPreco] = bebidaSelecionada.split('|');
+                const subtotalBebida = parseFloat(bebidaPreco) * quantidadeBebida;
+                const textoBebida = `Bebida: ${bebidaNome}, Quantidade: ${quantidadeBebida}, Subtotal: R$ ${subtotalBebida.toFixed(2)}`;
+
+                const listaPedido = document.querySelector('#resumo-pedido');
+                listaPedido.innerHTML += `<div class="pedido-item">${textoBebida}</div>`;
+
+                subtotalPedido += subtotalBebida;
+                atualizarSubtotalPedido();
+            }
+        }
+
+        function atualizarSubtotalPedido() {
+            document.getElementById('subtotal-pedido').textContent = `Subtotal do Pedido: R$ ${subtotalPedido.toFixed(2)}`;
+        }
+
+        function calcularTotalPedido() {
+            let totalPedido = subtotalPedido + taxaEntrega;
+            if (descontoAplicado) {
+                totalPedido -= totalPedido * (descontoGiroDaSorte / 100);
+            }
+            const totalPedidoTexto = `Total do Pedido: R$ ${totalPedido.toFixed(2)}`;
+            document.getElementById('total-pedido').textContent = totalPedidoTexto;
+
+            // Copiar resumo do pedido para a área de transferência
+            const resumoPedido = document.getElementById('resumo-pedido').textContent;
+            const totalPedidoCopiado = `Resumo do Pedido:\n${resumoPedido}\n${totalPedidoTexto}`;
+            navigator.clipboard.writeText(totalPedidoCopiado).then(function() {
+                alert('Resumo do pedido copiado para a área de transferência.');
+            }, function(err) {
+                console.error('Erro ao copiar: ', err);
+            });
+        }
+
+        function calcularTotalPedidoComDesconto() {
+            let totalPedido = subtotalPedido + taxaEntrega;
+            if (descontoAplicado) {
+                totalPedido -= totalPedido * (descontoGiroDaSorte / 100);
+            }
+            const totalPedidoTexto = `Total do Pedido com Desconto: R$ ${totalPedido.toFixed(2)}`;
+            document.getElementById('total-pedido').textContent = totalPedidoTexto;
+        }
+
+        function atualizarTaxaEntrega() {
+            const bairroSelecionado = document.getElementById('bairro').value;
+            const taxa = document.querySelector(`option[value="${bairroSelecionado}"]`).getAttribute('data-taxa');
+            taxaEntrega = parseFloat(taxa);
+            const taxaEntregaElement = document.getElementById('taxa-entrega');
+            taxaEntregaElement.textContent = `Taxa de Entrega: R$ ${taxaEntrega.toFixed(2)}`;
+        }
+
+        function enviarPedidoWhatsApp() {
+            const resumoPedido = document.getElementById('resumo-pedido').textContent;
+            const totalPedido = document.getElementById('total-pedido').textContent;
+            const mensagem = encodeURIComponent(`${resumoPedido}\n${totalPedido}`);
+            const numeroWhatsApp = "5594991406193"; // Número do WhatsApp da loja
+            const url = `https://wa.me/${numeroWhatsApp}?text=${mensagem}`;
+            window.open(url, "_blank");
+        }
+    </script>
+</div>
+</body>
+</html>
